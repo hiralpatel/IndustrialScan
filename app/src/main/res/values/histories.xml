@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array
+        name="mytable_records_v1">
+        <item>First row</item>
+        <item>Second row</item>
+        <item>Third row</item>
+    </string-array>
+</resources>
