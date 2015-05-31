@@ -53,15 +53,9 @@ public class History
 
     public String getGermanAction()
     {
-        switch(this.action)
-        {
-            case "login":
-                return "angemeldet";
-            case "logout":
-                return "abgemeldet";
-            default:
-                return action;
-        }
+        if(this.action.equals("login")) return "angemeldet";
+        else if(this.action.equals("logout")) return "abgemeldet";
+        else return action;
     }
 
     public void setAction(String action) {
