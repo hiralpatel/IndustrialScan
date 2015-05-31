@@ -22,10 +22,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.Header;
 import org.json.*;
+
+import com.google.gson.Gson;
 import com.loopj.android.http.*;
+
+import de.htwdd.industrialscan.model.History;
+import de.htwdd.industrialscan.model.Person;
 
 
 public class ScanActivity extends ActionBarActivity implements ActionBar.TabListener
@@ -38,13 +44,14 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    static Person currentlySelectedPerson;
     SectionsPagerAdapter mSectionsPagerAdapter;
     private List historyItemList; // at the top of your fragment list
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    ViewPager mViewPager;
+    static ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -149,11 +156,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             if(position==0) return PlaceholderFragment.newInstance(1);
-            else if(position==1)
-            {
-                return HistoryFragment.newInstance(1);
-            }
-
+            else if(position==1) return HistoryFragment.newInstance(2);
+            else if(position==2) return UserFragment.newInstance(3);
             else return new Fragment();
         }
 
@@ -210,6 +214,166 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
+            return rootView;
+        }
+    }
+
+    /**
+     * A placeholder fragment containing a simple view.
+     */
+    public static class HistoryFragment extends Fragment
+    {
+        /**
+     * The fragment argument representing the section number for this
+     * fragment.
+     */
+    private static final String ARG_SECTION_NUMBER = "section_number";
+
+        ListView lv;
+
+        /**
+         * Returns a new instance of this fragment for the history list screen
+         * number.
+         */
+        public static HistoryFragment newInstance(int sectionNumber)
+        {
+            HistoryFragment fragment = new HistoryFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        public HistoryFragment()
+        {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_history, container, false);
+            lv=(ListView) rootView.findViewById(R.id.historyListView);
+
+            try
+            {
+                getAllHistories();
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+                                        long arg3) {
+                    String listEntry = (String) arg0.getItemAtPosition(arg2);
+                    String userId = listEntry.substring(0, listEntry.indexOf("hat"));
+                    if(!userId.isEmpty())
+                    {
+                        try
+                        {
+                            getPersonById(userId);
+                        } catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            return rootView;
+        }
+
+        public void getAllPersons() throws JSONException
+        {
+            RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline) {
+                    Gson gson = new Gson();
+                    Person[] persons = gson.fromJson(timeline.toString(), Person[].class);
+                    String value[] = new String[persons.length];
+                    for (int i = 0; i < persons.length; i++) {
+                        value[i] = persons[i].toString();
+                    }
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1, value);
+                    lv.setAdapter(adapter);
+                }
+            });
+        }
+
+        public void getAllHistories() throws JSONException
+        {
+            RestClient.get("users/getAllHistories/", null, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline) {
+                    Gson gson = new Gson();
+                    History[] histories = gson.fromJson(timeline.toString(), History[].class);
+                    String value[] = new String[histories.length];
+                    for (int i = 0; i < histories.length; i++)
+                    {
+                        value[i] = histories[i].getUserId() + " hat sich am " + histories[i].getTime() + " Uhr " + histories[i].getGermanAction();
+                    }
+                    ArrayAdapter<String> adapter=new HistoryListAdapter(getActivity(),value);
+                    lv.setAdapter(adapter);
+                }
+            });
+        }
+
+        public void getPersonById(String id) throws JSONException
+        {
+            RestClient.get("users/getPersonByIdJSON/"+id, null, new JsonHttpResponseHandler()
+            {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline)
+                {
+                    Gson gson = new Gson();
+                    Person[] persons = gson.fromJson(timeline.toString(), Person[].class);
+                    String value[] = new String[persons.length];
+                    for (int i = 0; i < persons.length; i++) {
+                        value[i] = persons[i].toString();
+                    }
+                    currentlySelectedPerson = persons[0];
+                    mViewPager.setCurrentItem(3);
+                }
+            });
+        }
+    }
+
+    /**
+     * A placeholder fragment containing a simple view.
+     */
+    public static class UserFragment extends Fragment
+    {
+        /**
+         * The fragment argument representing the section number for this
+         * fragment.
+         */
+        private static final String ARG_SECTION_NUMBER = "section_number";
+        TextView name;
+
+        /**
+         * Returns a new instance of this fragment for the history list screen
+         * number.
+         */
+        public static UserFragment newInstance(int sectionNumber)
+        {
+            UserFragment fragment = new UserFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        public UserFragment()
+        {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_user, container, false);
+            name = (TextView) rootView.findViewById(R.id.textViewNameContent);
+            if(currentlySelectedPerson!=null) name.setText(currentlySelectedPerson.getFirstName());
             return rootView;
         }
     }
