@@ -52,7 +52,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      */
     static Person currentlySelectedPerson;
     SectionsPagerAdapter mSectionsPagerAdapter;
-    private List historyItemList; // at the top of your fragment list
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -275,9 +274,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            if(position==0) return PlaceholderFragment.newInstance(1);
-            else if(position==1) return HistoryFragment.newInstance(2);
-            else if(position==2) return UserFragment.newInstance(3);
+            if(position==0) return PlaceholderFragment.newInstance(0);
+            else if(position==1) return HistoryFragment.newInstance(1);
+            else if(position==2) return UserFragment.newInstance(2);
             else return new Fragment();
         }
 
@@ -452,8 +451,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                     for (int i = 0; i < persons.length; i++) {
                         value[i] = persons[i].toString();
                     }
-                    currentlySelectedPerson = persons[0];
-                    mViewPager.setCurrentItem(3);
+                    Toast.makeText(getActivity(), ""+persons[0].getFirstName()+ " " +persons[0].getLastName()+ " aus der Abteilung "+ persons[0].getRole() ,
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -493,7 +492,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_user, container, false);
             name = (TextView) rootView.findViewById(R.id.textViewNameContent);
-            if(currentlySelectedPerson!=null) name.setText(currentlySelectedPerson.getFirstName());
             return rootView;
         }
     }
