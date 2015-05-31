@@ -114,12 +114,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         Steven
          */
         mDialog = new AlertDialog.Builder(this).setNeutralButton("Ok", null).create();
-
         mAdapter = NfcAdapter.getDefaultAdapter(this);
         if (mAdapter == null) {
-            showMessage(R.string.error, R.string.no_nfc);
-            finish();
-            return;
+            //showMessage(R.string.error, R.string.no_nfc);
+            //finish();
+            //return;
         }
         // Eventhandler über NFC
         mPendingIntent = PendingIntent.getActivity(this, 0,
