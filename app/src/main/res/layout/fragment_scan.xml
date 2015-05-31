@@ -9,10 +9,36 @@
     <TextView android:id="@+id/section_label" android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/show_rfid"
+        android:layout_marginTop="59dp"
+        android:typeface="serif"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:hint="@string/describe_show_rfid"
+        android:layout_below="@+id/section_label"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scanned_rfid"
+        android:typeface="serif"
+        android:hint="## ## ## ##"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_alignTop="@+id/show_rfid"
+        android:layout_alignRight="@+id/imageView"
+        android:layout_alignEnd="@+id/imageView" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageView"
-        android:src="@drawable/v5c" />
+        android:src="@drawable/v5c"
+        android:layout_below="@+id/show_rfid" />
 
 </RelativeLayout>

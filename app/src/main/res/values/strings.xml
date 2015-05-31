@@ -8,4 +8,9 @@
     <string name="hello_world">Hello world!</string>
 
     <string name="action_settings">Settings</string>
+
+    <string name="error">Fehler</string>
+    <string name="no_nfc">Bitte aktivieren sie Ihr NFC.</string>
+    <string name="nfc_disabled">NFC ist deaktiviert. Bitte aktivieren Sie NFC.</string>
+    <string name="describe_show_rfid">HEX-RFID: </string>
 </resources>
