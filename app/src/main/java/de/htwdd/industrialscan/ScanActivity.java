@@ -1,26 +1,27 @@
 package de.htwdd.industrialscan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.nfc.NdefMessage;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,8 @@ import org.json.*;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.*;
+import java.util.List;
+import java.util.Locale;
 
 import de.htwdd.industrialscan.model.History;
 import de.htwdd.industrialscan.model.Person;
@@ -52,6 +55,15 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      * The {@link ViewPager} that will host the section contents.
      */
     static ViewPager mViewPager;
+
+    /*
+        Steven
+     */
+    private TextView scanned_rfid;
+    private NfcAdapter mAdapter;
+    protected PendingIntent mPendingIntent;
+    private NdefMessage mNdefPushMessage;
+    private AlertDialog mDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -93,8 +105,114 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+
+
+        /*
+        Steven
+         */
+        mDialog = new AlertDialog.Builder(this).setNeutralButton("Ok", null).create();
+
+        mAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (mAdapter == null) {
+            showMessage(R.string.error, R.string.no_nfc);
+            finish();
+            return;
+        }
+        // Eventhandler über NFC
+        mPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
     }
 
+    // Steven - Nachrichten overlay
+    private void showMessage(int title, int message) {
+        mDialog.setTitle(title);
+        mDialog.setMessage(getText(message));
+        mDialog.show();
+    }
+
+    @Override
+    protected void onResume() {
+        System.out.println("main:onResume()");
+        super.onResume();
+        if (mAdapter != null) {
+            if (!mAdapter.isEnabled()) {
+                showWirelessSettingsDialog();
+            }
+            mAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
+        }
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        System.out.println("main:onNewIntent()");
+        setIntent(intent);
+        resolveIntent(intent);
+    }
+
+    public void resolveIntent(Intent intent){
+
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+            // Ladescreen
+
+            scanned_rfid = (TextView) findViewById(R.id.scanned_rfid);
+
+            // Umwandeln
+            Tag tag = (Tag) intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            String hex = getHex(tag.getId());
+            System.out.println("Hex-ID: " + hex);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hex.length(); i += 2) {
+                sb.append(hex.substring(i, i + 2) + " ");
+            }
+            System.out.println("SB:Hex-ID: " + sb.toString());
+            scanned_rfid.setText(sb.toString());
+
+            // Intent intent = new Intent(this, NextActivity.class);
+            // startActivity(intent);
+        }
+        return;
+    }
+
+
+    private String getHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
+        for (int i = bytes.length - 1; i >= 0; --i) {
+            int b = bytes[i] & 0xff;
+            if (b < 0x10)
+                sb.append('0');
+            sb.append(Integer.toHexString(b).toUpperCase());
+        }
+        String hex = sb.toString();
+        String reverse = "";
+        for (int i = sb.length(); i>0 ; i=i-2) {
+            reverse += hex.substring(i - 2, i);
+        }
+        return reverse;
+    }
+
+    // Anzeigen der NFC-Einstellungen
+    private void showWirelessSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.nfc_disabled);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        builder.create().show();
+        return;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)

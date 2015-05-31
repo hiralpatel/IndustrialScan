@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 18
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "de.htwdd.industrialscan"
         minSdkVersion 10
-        targetSdkVersion 22
+        targetSdkVersion 18
         versionCode 1
         versionName "1.0"
     }
@@ -21,7 +21,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile 'com.android.support:appcompat-v7:18.0.0'
     compile 'com.loopj.android:android-async-http:1.4.5'
     compile 'com.google.code.gson:gson:2.3.1'
 }
