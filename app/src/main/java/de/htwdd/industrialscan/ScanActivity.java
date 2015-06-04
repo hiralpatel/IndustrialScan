@@ -370,27 +370,33 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
 
             //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            autoFocusHandler = new Handler();
-            mCamera = getCameraInstance();
-
-        /* Instance barcode scanner */
-            scanner = new ImageScanner();
-            scanner.setConfig(0, Config.ENABLE, 0);
-            scanner.setConfig(Symbol.QRCODE, Config.ENABLE,1);
-
-            mPreview = new CameraPreview(inflater.getContext(), mCamera, previewCb, autoFocusCB);
-            FrameLayout preview = (FrameLayout)rootView.findViewById(R.id.imageView);
-            preview.addView(mPreview);
 
             qr_button = (Button)rootView.findViewById(R.id.button_capture);
             qr_spoiler = (ImageView) rootView.findViewById(R.id.imageView2);
             qr_livecam = (FrameLayout) rootView.findViewById(R.id.imageView);
             scanText = (TextView) rootView.findViewById(R.id.scanned_rfid);
+
+
+            autoFocusHandler = new Handler();
+            mCamera = getCameraInstance();
+
+            /* Instance barcode scanner */
+
+            scanner = new ImageScanner();
+            scanner.setConfig(0, Config.ENABLE, 0);
+            scanner.setConfig(Symbol.QRCODE, Config.ENABLE, 1);
+
+
+            mPreview = new CameraPreview(inflater.getContext(), mCamera, previewCb, autoFocusCB);
+            FrameLayout preview = (FrameLayout) rootView.findViewById(R.id.imageView);
+            preview.addView(mPreview);
+
+
 
 
             qr_button.setOnClickListener(new View.OnClickListener() {
@@ -400,7 +406,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                         qr_spoiler.setVisibility(View.INVISIBLE);
                         qr_livecam.setVisibility(View.VISIBLE);
                         scanText.setText("## ## ## ##");
-
+                        System.out.println(">>>>>>>>>>>>>>>>>>>>>" + barcodeScanned);
                         barcodeScanned = false;
                         System.out.println("Test!");
                         mCamera.setPreviewCallback(previewCb);
@@ -426,7 +432,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
             if (result != 0) {
                 previewing = false;
-                mCamera.setPreviewCallback(null);
+                //mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
                 qr_button.setText("QR-Code identifiziert. \n Klicken Sie für einen erneuten Scan!");
                 qr_button.setTextSize(20);
@@ -468,7 +474,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
     public void onPause() {
         super.onPause();
-        releaseCamera();
+        //releaseCamera();
     }
 
     /** A safe way to get an instance of the Camera object. */
@@ -676,6 +682,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_user, container, false);
             name = (TextView) rootView.findViewById(R.id.textViewNameContent);
+           
+
             return rootView;
         }
     }
