@@ -20,7 +20,7 @@
         android:layout_marginTop="59dp"
         android:typeface="serif"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:hint="@string/describe_show_rfid"
+        android:hint="BLA"
         android:layout_below="@+id/section_label"/>
 
     <TextView
@@ -34,11 +34,27 @@
         android:layout_alignRight="@+id/imageView"
         android:layout_alignEnd="@+id/imageView" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <FrameLayout
         android:id="@+id/imageView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/show_rfid"
+        android:visibility="invisible" />
+    <ImageView
+        android:id="@+id/imageView2"
         android:src="@drawable/v5c"
-        android:layout_below="@+id/show_rfid" />
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/show_rfid"/>
+
+    <Button
+        android:id="@+id/button_capture"
+        android:text="Scan"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/show_rfid"
+        android:typeface="serif"
+        android:background="@android:color/transparent"
+        android:textSize="64dp" />
 
 </RelativeLayout>

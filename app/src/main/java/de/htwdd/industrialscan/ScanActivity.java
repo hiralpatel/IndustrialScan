@@ -2,12 +2,17 @@ package de.htwdd.industrialscan;
 
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -23,19 +28,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.http.Header;
-import org.json.*;
-
 import com.google.gson.Gson;
-import com.loopj.android.http.*;
-import java.util.List;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import net.sourceforge.zbar.Config;
+import net.sourceforge.zbar.Image;
+import net.sourceforge.zbar.ImageScanner;
+import net.sourceforge.zbar.Symbol;
+import net.sourceforge.zbar.SymbolSet;
+
+import org.apache.http.Header;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.Locale;
 
+import de.htwdd.industrialscan.model.CameraPreview;
 import de.htwdd.industrialscan.model.History;
 import de.htwdd.industrialscan.model.Person;
 
@@ -67,9 +82,30 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     private NdefMessage mNdefPushMessage;
     private AlertDialog mDialog;
 
+    // Camera
+
+    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
+
+    private Uri fileUri;
+
+    private static Camera mCamera;
+    private static CameraPreview mPreview;
+    private static TextView scanText;
+    private static Button qr_button;
+    private static FrameLayout qr_livecam;
+    private static ImageView qr_spoiler;
+
+    private static ImageScanner scanner;
+
+    private static boolean barcodeScanned = true;
+    private static boolean previewing = true;
+    private static Handler autoFocusHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
 
@@ -123,7 +159,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         mPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
+        
+        
     }
+
+
 
     // Steven - Nachrichten overlay
     private void showMessage(int title, int message) {
@@ -333,7 +373,151 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
+
+            //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            autoFocusHandler = new Handler();
+            mCamera = getCameraInstance();
+
+        /* Instance barcode scanner */
+            scanner = new ImageScanner();
+            scanner.setConfig(0, Config.ENABLE, 0);
+            scanner.setConfig(Symbol.QRCODE, Config.ENABLE,1);
+
+            mPreview = new CameraPreview(inflater.getContext(), mCamera, previewCb, autoFocusCB);
+            FrameLayout preview = (FrameLayout)rootView.findViewById(R.id.imageView);
+            preview.addView(mPreview);
+
+            qr_button = (Button)rootView.findViewById(R.id.button_capture);
+            qr_spoiler = (ImageView) rootView.findViewById(R.id.imageView2);
+            qr_livecam = (FrameLayout) rootView.findViewById(R.id.imageView);
+            scanText = (TextView) rootView.findViewById(R.id.scanned_rfid);
+
+
+            qr_button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if (barcodeScanned) {
+                        qr_button.setVisibility(View.INVISIBLE);
+                        qr_spoiler.setVisibility(View.INVISIBLE);
+                        qr_livecam.setVisibility(View.VISIBLE);
+                        scanText.setText("## ## ## ##");
+
+                        barcodeScanned = false;
+                        System.out.println("Test!");
+                        mCamera.setPreviewCallback(previewCb);
+                        mCamera.startPreview();
+                        previewing = true;
+                        mCamera.autoFocus(autoFocusCB);
+                    }
+                }
+            });
             return rootView;
+        }
+    }
+
+    static Camera.PreviewCallback previewCb = new Camera.PreviewCallback() {
+        public void onPreviewFrame(byte[] data, Camera camera) {
+            Camera.Parameters parameters = camera.getParameters();
+            Camera.Size size = parameters.getPreviewSize();
+
+            Image barcode = new Image(size.width, size.height, "Y800");
+            barcode.setData(data);
+
+            int result = scanner.scanImage(barcode);
+
+            if (result != 0) {
+                previewing = false;
+                mCamera.setPreviewCallback(null);
+                mCamera.stopPreview();
+                qr_button.setText("QR-Code identifiziert. \n Klicken Sie für einen erneuten Scan!");
+                qr_button.setTextSize(20);
+                qr_button.setVisibility(View.VISIBLE);
+
+
+                SymbolSet syms = scanner.getResults();
+                for (Symbol sym : syms) {
+
+                    scanText.setText(sym.getData());
+                    barcodeScanned = true;
+                }
+            }
+        }
+    };
+
+    // Mimic continuous auto-focusing
+    static Camera.AutoFocusCallback  autoFocusCB = new Camera.AutoFocusCallback() {
+        public void onAutoFocus(boolean success, Camera camera) {
+            autoFocusHandler.postDelayed(doAutoFocus, 1000);
+        }
+    };
+
+    private void releaseCamera() {
+        if (mCamera != null) {
+            previewing = false;
+            mCamera.setPreviewCallback(null);
+            mCamera.release();
+            mCamera = null;
+        }
+    }
+
+    private static Runnable doAutoFocus = new Runnable() {
+        public void run() {
+            if (previewing)
+                mCamera.autoFocus(autoFocusCB);
+        }
+    };
+
+    public void onPause() {
+        super.onPause();
+        releaseCamera();
+    }
+
+    /** A safe way to get an instance of the Camera object. */
+    public static Camera getCameraInstance(){
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        }
+        catch (Exception e){
+            // Camera is not available (in use or does not exist)
+        }
+        return c; // returns null if camera is unavailable
+    }
+
+    /** Check if this device has a camera */
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Image captured and saved to fileUri specified in the Intent
+                Toast.makeText(this, "Image saved to:\n" +
+                        data.getData(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // User cancelled the image capture
+            } else {
+                // Image capture failed, advise user
+            }
+        }
+
+        if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Video captured and saved to fileUri specified in the Intent
+                Toast.makeText(this, "Video saved to:\n" +
+                        data.getData(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // User cancelled the video capture
+            } else {
+                // Video capture failed, advise user
+            }
         }
     }
 
