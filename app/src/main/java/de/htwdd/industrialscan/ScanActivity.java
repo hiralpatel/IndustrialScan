@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.nfc.NdefMessage;
@@ -92,6 +93,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     private static Camera mCamera;
     private static CameraPreview mPreview;
     private static TextView scanText;
+    private static TextView scan_type;
     private static Button qr_button;
     private static FrameLayout qr_livecam;
     private static ImageView qr_spoiler;
@@ -211,6 +213,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             }
             System.out.println("SB:Hex-ID: " + sb.toString());
             scanned_rfid.setText(sb.toString());
+            scan_type.setText("RFID :");
+            scanned_rfid.setTextColor(getResources().getColor(R.color.color_white));
 
             // Intent intent = new Intent(this, NextActivity.class);
             // startActivity(intent);
@@ -380,6 +384,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             qr_spoiler = (ImageView) rootView.findViewById(R.id.imageView2);
             qr_livecam = (FrameLayout) rootView.findViewById(R.id.imageView);
             scanText = (TextView) rootView.findViewById(R.id.scanned_rfid);
+            scan_type = (TextView) rootView.findViewById(R.id.show_rfid);
 
 
             autoFocusHandler = new Handler();
@@ -406,7 +411,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                         qr_spoiler.setVisibility(View.INVISIBLE);
                         qr_livecam.setVisibility(View.VISIBLE);
                         scanText.setText("## ## ## ##");
-                        System.out.println(">>>>>>>>>>>>>>>>>>>>>" + barcodeScanned);
+                        scan_type.setText("QR / RFID :");
+                        scanText.setTextColor(Color.parseColor("#FFFFFF"));
+                        scan_type.setTextColor(Color.parseColor("#FFFFFF"));
                         barcodeScanned = false;
                         System.out.println("Test!");
                         mCamera.setPreviewCallback(previewCb);
@@ -435,6 +442,10 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 //mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
                 qr_button.setText("QR-Code identifiziert. \n Klicken Sie für einen erneuten Scan!");
+                scanText.setTextColor(Color.parseColor("#FFFFFF"));
+
+                scan_type.setText("QR :");
+                scan_type.setTextColor(Color.parseColor("#FFFFFF"));
                 qr_button.setTextSize(20);
                 qr_button.setVisibility(View.VISIBLE);
 
@@ -497,33 +508,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         } else {
             // no camera on this device
             return false;
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Image captured and saved to fileUri specified in the Intent
-                Toast.makeText(this, "Image saved to:\n" +
-                        data.getData(), Toast.LENGTH_LONG).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                // User cancelled the image capture
-            } else {
-                // Image capture failed, advise user
-            }
-        }
-
-        if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Video captured and saved to fileUri specified in the Intent
-                Toast.makeText(this, "Video saved to:\n" +
-                        data.getData(), Toast.LENGTH_LONG).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                // User cancelled the video capture
-            } else {
-                // Video capture failed, advise user
-            }
         }
     }
 
@@ -682,7 +666,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_user, container, false);
             name = (TextView) rootView.findViewById(R.id.textViewNameContent);
-           
+
 
             return rootView;
         }

@@ -4,7 +4,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context=".ScanActivity$PlaceholderFragment">
+    tools:context=".ScanActivity$PlaceholderFragment"
+    >
 
     <TextView android:id="@+id/section_label" android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -20,8 +21,10 @@
         android:layout_marginTop="59dp"
         android:typeface="serif"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:hint="BLA"
-        android:layout_below="@+id/section_label"/>
+        android:hint="QR / RFID :"
+        android:layout_below="@+id/section_label"
+        android:textColor="#ffffd243"
+        android:textColorHint="#FFFFFF"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,7 +35,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_alignTop="@+id/show_rfid"
         android:layout_alignRight="@+id/imageView"
-        android:layout_alignEnd="@+id/imageView" />
+        android:layout_alignEnd="@+id/imageView"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <FrameLayout
         android:id="@+id/imageView"
@@ -45,7 +50,8 @@
         android:src="@drawable/v5c"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/show_rfid"/>
+        android:layout_below="@+id/show_rfid"
+        android:alpha="0.2"/>
 
     <Button
         android:id="@+id/button_capture"
@@ -55,6 +61,8 @@
         android:layout_below="@+id/show_rfid"
         android:typeface="serif"
         android:background="@android:color/transparent"
-        android:textSize="64dp" />
+        android:textSize="64dp"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
 </RelativeLayout>
