@@ -74,6 +74,12 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      */
     static ViewPager mViewPager;
 
+    //loading ZBAr lib for Galaxy Ace
+    static {
+        System.loadLibrary("iconv");
+    }
+
+
     /*
         Steven
      */
