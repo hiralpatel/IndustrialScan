@@ -15,7 +15,8 @@ public class History
     String time;
     String action;
 
-    public History(String userId) {
+    public History(String userId)
+    {
         this.userid = userId;
     }
 

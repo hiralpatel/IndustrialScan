@@ -1,9 +1,12 @@
 package de.htwdd.industrialscan;
 
+import android.content.Context;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.apache.http.entity.StringEntity;
 import org.json.JSONException;
 
 /**
@@ -16,15 +19,19 @@ public class RestClient
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 
-    public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)throws JSONException
+    public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)
     {
         client.get(getAbsoluteUrl(url), params, responseHandler);
     }
 
-    public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)
+    public static void post(Context context, String url, StringEntity entity, AsyncHttpResponseHandler responseHandler)
     {
-        client.post(getAbsoluteUrl(url), params, responseHandler);
+        client.addHeader("Content-Type","application/json");
+        client.post(context,getAbsoluteUrl(url),entity,"application/json",responseHandler);
+        //client.post(getAbsoluteUrl(url), params, responseHandler);
     }
+
+
 
     private static String getAbsoluteUrl(String relativeUrl)
     {

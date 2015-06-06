@@ -1,6 +1,7 @@
 package de.htwdd.industrialscan;
 
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,7 +38,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
@@ -46,9 +49,15 @@ import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
 import org.apache.http.Header;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
-import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import de.htwdd.industrialscan.model.CameraPreview;
@@ -109,6 +118,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     private static boolean barcodeScanned = true;
     private static boolean previewing = true;
     private static Handler autoFocusHandler;
+    static Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -116,6 +126,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
+        context = getApplicationContext();
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -460,11 +471,78 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 for (Symbol sym : syms) {
 
                     scanText.setText(sym.getData());
+                    processScannedId(sym.getData());
                     barcodeScanned = true;
                 }
             }
         }
     };
+
+    static public void processScannedId(final String id)
+    {
+        //check for if user exists
+        RestClient.get("users/getPersonByIdJSON/"+id, null, new JsonHttpResponseHandler()
+        {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response)
+            {
+                Gson gson = new Gson();
+                Person[] persons = gson.fromJson(response.toString(), Person[].class);
+                if(persons.length != 1)
+                {
+                    qr_button.setText("Nutzer mit dieser ID ist nicht vorhanden! \n Klicken Sie für einen erneuten Scan!");
+                }
+                else //User found! Now fetch the last action of this user
+                {
+                    RestClient.get("users/getPersonsCurrentActionByIdJSON/"+id, null, new JsonHttpResponseHandler()
+                    {
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, JSONArray response)
+                        {
+                            Gson gson = new Gson();
+                            History[] histories = gson.fromJson(response.toString(), History[].class);
+                            final History newHistory = new History(id);
+                            if(histories.length == 0)
+                            {
+                                newHistory.setAction("login");
+                            }
+                            else if(histories[0].getAction().equals("logout"))
+                            {
+                                newHistory.setAction("login");
+                            }
+                            else
+                            {
+                                newHistory.setAction("logout");
+                            }
+                            StringEntity entity = null;
+                            try
+                            {
+                                entity = new StringEntity(gson.toJson(newHistory));
+                            } catch (UnsupportedEncodingException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            RestClient.post(context,"users/saveHistory/",entity, new JsonHttpResponseHandler()
+                            {
+                                @Override
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response)
+                                {
+                                    if(response.toString().contains("OK"))
+                                    {
+                                        qr_button.setText("Sie wurden erfolgreich an dieser Maschine"+newHistory.getGermanAction()+"\n Klicken Sie für einen erneuten Scan!");
+                                    }
+                                    else
+                                    {
+                                        qr_button.setText("Bei der Authorisierung ist ein Fehler aufgetreten!\n Klicken Sie für einen erneuten Scan!");
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
 
     // Mimic continuous auto-focusing
     static Camera.AutoFocusCallback  autoFocusCB = new Camera.AutoFocusCallback() {
@@ -553,13 +631,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             View rootView = inflater.inflate(R.layout.fragment_history, container, false);
             lv=(ListView) rootView.findViewById(R.id.historyListView);
 
-            try
-            {
-                getAllHistories();
-            } catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
+            getAllHistories();
 
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -570,20 +642,14 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                     String userId = listEntry.substring(0, listEntry.indexOf("hat"));
                     if(!userId.isEmpty())
                     {
-                        try
-                        {
                             getPersonById(userId);
-                        } catch (JSONException e)
-                        {
-                            e.printStackTrace();
-                        }
                     }
                 }
             });
             return rootView;
         }
 
-        public void getAllPersons() throws JSONException
+        public void getAllPersons()
         {
             RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler() {
                 @Override
@@ -600,7 +666,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             });
         }
 
-        public void getAllHistories() throws JSONException
+        public void getAllHistories()
         {
             RestClient.get("users/getAllHistories/", null, new JsonHttpResponseHandler() {
                 @Override
@@ -618,7 +684,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             });
         }
 
-        public void getPersonById(String id) throws JSONException
+        public void getPersonById(String id)
         {
             RestClient.get("users/getPersonByIdJSON/"+id, null, new JsonHttpResponseHandler()
             {
