@@ -1,7 +1,6 @@
 package de.htwdd.industrialscan;
 
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,9 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
@@ -50,14 +47,10 @@ import net.sourceforge.zbar.SymbolSet;
 
 import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 import de.htwdd.industrialscan.model.CameraPreview;
@@ -169,26 +162,17 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
          */
         mDialog = new AlertDialog.Builder(this).setNeutralButton("Ok", null).create();
         mAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (mAdapter == null) {
+        //if (mAdapter == null) {
             //showMessage(R.string.error, R.string.no_nfc);
             //finish();
             //return;
-        }
+        //}
         // Eventhandler über NFC
         mPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
         
         
-    }
-
-
-
-    // Steven - Nachrichten overlay
-    private void showMessage(int title, int message) {
-        mDialog.setTitle(title);
-        mDialog.setMessage(getText(message));
-        mDialog.show();
     }
 
     @Override
@@ -230,6 +214,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             }
             System.out.println("SB:Hex-ID: " + sb.toString());
             scanned_rfid.setText(sb.toString());
+            System.out.println("Ausgabe1 : " + scanned_rfid.getText());
+            processScannedId(hex);
             scan_type.setText("RFID :");
             scanned_rfid.setTextColor(getResources().getColor(R.color.color_white));
 
@@ -387,6 +373,18 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             return fragment;
         }
 
+        @Override
+        public void onPause() {
+            super.onPause();
+            System.out.println("Scan :: OnPause()");
+        }
+
+        @Override
+        public void onResume() {
+            super.onPause();
+            System.out.println("Scan :: OnResume()");
+        }
+
         public PlaceholderFragment() {
         }
 
@@ -396,6 +394,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             final View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
 
             //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+            System.out.println("onCreate::: Scan!!!!");
 
             qr_button = (Button)rootView.findViewById(R.id.button_capture);
             qr_spoiler = (ImageView) rootView.findViewById(R.id.imageView2);
@@ -424,6 +424,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             qr_button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if (barcodeScanned) {
+                        barcodeScanned = false;
                         qr_button.setVisibility(View.INVISIBLE);
                         qr_spoiler.setVisibility(View.INVISIBLE);
                         qr_livecam.setVisibility(View.VISIBLE);
@@ -431,8 +432,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                         scan_type.setText("QR / RFID :");
                         scanText.setTextColor(Color.parseColor("#FFFFFF"));
                         scan_type.setTextColor(Color.parseColor("#FFFFFF"));
-                        barcodeScanned = false;
-                        System.out.println("Test!");
+
                         mCamera.setPreviewCallback(previewCb);
                         mCamera.startPreview();
                         previewing = true;
@@ -449,10 +449,10 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             Camera.Parameters parameters = camera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
 
-            Image barcode = new Image(size.width, size.height, "Y800");
-            barcode.setData(data);
+            Image qrcode = new Image(size.width, size.height, "Y800");
+            qrcode.setData(data);
 
-            int result = scanner.scanImage(barcode);
+            int result = scanner.scanImage(qrcode);
 
             if (result != 0) {
                 previewing = false;
@@ -463,7 +463,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
                 scan_type.setText("QR :");
                 scan_type.setTextColor(Color.parseColor("#FFFFFF"));
-                qr_button.setTextSize(20);
+                qr_button.setTextSize(15);
                 qr_button.setVisibility(View.VISIBLE);
 
 
@@ -471,6 +471,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 for (Symbol sym : syms) {
 
                     scanText.setText(sym.getData());
+                    System.out.println("Ausgabe2 : " + scanText.getText());
                     processScannedId(sym.getData());
                     barcodeScanned = true;
                 }
@@ -481,58 +482,41 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     static public void processScannedId(final String id)
     {
         //check for if user exists
-        RestClient.get("users/getPersonByIdJSON/"+id, null, new JsonHttpResponseHandler()
-        {
+        RestClient.get("users/getPersonByIdJSON/" + id, null, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response)
-            {
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 Gson gson = new Gson();
                 Person[] persons = gson.fromJson(response.toString(), Person[].class);
-                if(persons.length != 1)
-                {
+                if (persons.length != 1) {
                     qr_button.setText("Nutzer mit dieser ID ist nicht vorhanden! \n Klicken Sie für einen erneuten Scan!");
-                }
-                else //User found! Now fetch the last action of this user
+                } else //User found! Now fetch the last action of this user
                 {
-                    RestClient.get("users/getPersonsCurrentActionByIdJSON/"+id, null, new JsonHttpResponseHandler()
-                    {
+                    RestClient.get("users/getPersonsCurrentActionByIdJSON/" + id, null, new JsonHttpResponseHandler() {
                         @Override
-                        public void onSuccess(int statusCode, Header[] headers, JSONArray response)
-                        {
+                        public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                             Gson gson = new Gson();
                             History[] histories = gson.fromJson(response.toString(), History[].class);
                             final History newHistory = new History(id);
-                            if(histories.length == 0)
-                            {
+                            if (histories.length == 0) {
                                 newHistory.setAction("login");
-                            }
-                            else if(histories[0].getAction().equals("logout"))
-                            {
+                            } else if (histories[0].getAction().equals("logout")) {
                                 newHistory.setAction("login");
-                            }
-                            else
-                            {
+                            } else {
                                 newHistory.setAction("logout");
                             }
                             StringEntity entity = null;
-                            try
-                            {
+                            try {
                                 entity = new StringEntity(gson.toJson(newHistory));
-                            } catch (UnsupportedEncodingException e)
-                            {
+                            } catch (UnsupportedEncodingException e) {
                                 e.printStackTrace();
                             }
-                            RestClient.post(context,"users/saveHistory/",entity, new JsonHttpResponseHandler()
-                            {
+                            RestClient.post(context, "users/saveHistory/", entity, new JsonHttpResponseHandler() {
                                 @Override
-                                public void onSuccess(int statusCode, Header[] headers, JSONObject response)
-                                {
-                                    if(response.toString().contains("OK"))
-                                    {
-                                        qr_button.setText("Sie wurden erfolgreich an dieser Maschine"+newHistory.getGermanAction()+"\n Klicken Sie für einen erneuten Scan!");
-                                    }
-                                    else
-                                    {
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                    qr_button.setTextSize(15);
+                                    if (response.toString().contains("OK")) {
+                                        qr_button.setText("Sie wurden erfolgreich an dieser Maschine" + newHistory.getGermanAction() + "\n Klicken Sie für einen erneuten Scan!");
+                                    } else {
                                         qr_button.setText("Bei der Authorisierung ist ein Fehler aufgetreten!\n Klicken Sie für einen erneuten Scan!");
                                     }
                                 }
@@ -619,6 +603,18 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
             return fragment;
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            System.out.println("HistoryFragment :: OnPause()");
+        }
+
+        @Override
+        public void onResume() {
+            super.onPause();
+            System.out.println("HistoryFragment :: OnResume()");
         }
 
         public HistoryFragment()
@@ -727,6 +723,18 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
             return fragment;
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            System.out.println("User :: OnPause()");
+        }
+
+        @Override
+        public void onResume() {
+            super.onPause();
+            System.out.println("User :: OnResume()");
         }
 
         public UserFragment()
