@@ -321,8 +321,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            if(position==0) return PlaceholderFragment.newInstance(0);
-            else if(position==1) return HistoryFragment.newInstance(1);
+            if(position==1) return PlaceholderFragment.newInstance(0);
+            else if(position==0) return HistoryFragment.newInstance(1);
             else if(position==2) return UserFragment.newInstance(2);
             else return new Fragment();
         }
@@ -381,7 +381,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
         @Override
         public void onResume() {
-            super.onPause();
+            super.onResume();
             System.out.println("Scan :: OnResume()");
         }
 
@@ -613,7 +613,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
         @Override
         public void onResume() {
-            super.onPause();
+            super.onResume();
             System.out.println("HistoryFragment :: OnResume()");
         }
 
@@ -733,7 +733,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
         @Override
         public void onResume() {
-            super.onPause();
+            super.onResume();
             System.out.println("User :: OnResume()");
         }
 

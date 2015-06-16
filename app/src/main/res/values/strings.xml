@@ -1,11 +1,9 @@
 <resources>
     <string name="app_name">IndustrialScan</string>
 
-    <string name="title_section1">Scan</string>
-    <string name="title_section2">History</string>
-    <string name="title_section3">Profile</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="title_section1">Historie</string>
+    <string name="title_section2">Scan</string>
+    <string name="title_section3">Mitarbeiter</string>
 
     <string name="action_settings">Settings</string>
 
