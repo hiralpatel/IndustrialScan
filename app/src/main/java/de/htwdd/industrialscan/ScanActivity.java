@@ -51,6 +51,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import de.htwdd.industrialscan.model.CameraPreview;
@@ -764,13 +766,16 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 public void onSuccess(int statusCode, Header[] headers, JSONArray response)
                 {
                     Gson gson = new Gson();
-                    Person[] persons = gson.fromJson(response.toString(), Person[].class);
-                    String value[] = new String[persons.length];
-                    for (int i = 0; i < persons.length; i++)
+                    final Person[] persons = gson.fromJson(response.toString(), Person[].class);
+                    final List<String> values = new ArrayList<String>();
+                    for (final Person p : persons)
                     {
-                        value[i] = persons[i].getFirstName()+" "+persons[i].getLastName();
+                                values.add(p.getFirstName()+" "+p.getLastName()+" ist "+p.getGermanStatus());
                     }
-                    ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),value);
+                    while(persons.length != values.size())
+                    {
+                    }
+                    ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),values);
                     lv.setAdapter(adapter);
                 }
             });

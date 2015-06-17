@@ -9,6 +9,7 @@ public class Person
     String firstName;
     String role;
     String lastName;
+    String status;
 
     public Person(String id)
     {
@@ -53,6 +54,24 @@ public class Person
         this.role = role;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getGermanStatus()
+    {
+        if(status.equals("login"))
+        {
+            return "verfügbar";
+        }
+        else return "nicht verfügbar";
+    }
+
+
     @Override
     public String toString() {
         return "Person{" +
@@ -60,6 +79,7 @@ public class Person
                 ", firstName='" + firstName + '\'' +
                 ", role='" + role + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

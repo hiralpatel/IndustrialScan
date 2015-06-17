@@ -8,15 +8,17 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+
 /**
  * Created by Simon on 30.05.15.
  */
 public class UserListAdapter extends ArrayAdapter<String>
 {
     private final Context context;
-    private final String[] values;
+    private final List<String> values;
 
-    public UserListAdapter(Context context, String[] values)
+    public UserListAdapter(Context context, List<String> values)
     {
         super(context, android.R.layout.simple_list_item_1, android.R.id.text1, values);
         this.context = context;
@@ -31,20 +33,20 @@ public class UserListAdapter extends ArrayAdapter<String>
         View rowView = inflater.inflate(R.layout.user_list_item, parent, false);
         TextView textView = (TextView) rowView.findViewById(R.id.textView);
         ImageView imageView = (ImageView) rowView.findViewById(R.id.imageView2);
-        textView.setText(values[position]);
+        textView.setText(values.get(position));
 
         // Change icon based on name
-        String s = values[position];
+        String s = values.get(position);
 
         System.out.println(s);
 
-        if (s.contains("angemeldet"))
+        if (s.contains("nicht"))
         {
-            imageView.setImageResource(R.drawable.unlocked);
+            imageView.setImageResource(R.drawable.offline);
         }
-        else if (s.contains("abgemeldet"))
+        else
         {
-            imageView.setImageResource(R.drawable.locked);
+            imageView.setImageResource(R.drawable.online);
         }
         return rowView;
     }
