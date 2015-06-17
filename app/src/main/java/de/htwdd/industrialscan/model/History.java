@@ -31,11 +31,13 @@ public class History
     public String getTime()
     {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        DateFormat germanFormat = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+        DateFormat germanFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
         try
         {
             Date oldTime = format.parse(this.time);
             return germanFormat.format(oldTime);
+
         } catch (ParseException e)
         {
             e.printStackTrace();

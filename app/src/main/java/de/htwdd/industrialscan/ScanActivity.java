@@ -320,8 +320,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public Fragment getItem(int position)
         {
             // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            if(position==1) return PlaceholderFragment.newInstance(0);
+            // Return a ScanFragment (defined as a static inner class below).
+            if(position==1) return ScanFragment.newInstance(0);
             else if(position==0) return HistoryFragment.newInstance(1);
             else if(position==2) return UserFragment.newInstance(2);
             else return new Fragment();
@@ -353,7 +353,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment
+    public static class ScanFragment extends Fragment
     {
         /**
          * The fragment argument representing the section number for this
@@ -365,8 +365,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static ScanFragment newInstance(int sectionNumber) {
+            ScanFragment fragment = new ScanFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
@@ -385,7 +385,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             System.out.println("Scan :: OnResume()");
         }
 
-        public PlaceholderFragment() {
+        public ScanFragment() {
         }
 
         @Override
@@ -740,7 +740,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                     String userId = listEntry.substring(0, listEntry.indexOf("hat"));
                     if(!userId.isEmpty())
                     {
-                        Toast.makeText(context, "Nutzer" + userId, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity().getApplicationContext(), "Nutzer" + userId, Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -749,13 +749,16 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
         public void getAllPersons()
         {
-            RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler() {
+            RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler()
+            {
                 @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline) {
+                public void onSuccess(int statusCode, Header[] headers, JSONArray response)
+                {
                     Gson gson = new Gson();
-                    Person[] persons = gson.fromJson(timeline.toString(), Person[].class);
+                    Person[] persons = gson.fromJson(response.toString(), Person[].class);
                     String value[] = new String[persons.length];
-                    for (int i = 0; i < persons.length; i++) {
+                    for (int i = 0; i < persons.length; i++)
+                    {
                         value[i] = persons[i].getFirstName()+" "+persons[i].getLastName();
                     }
                     ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),value);
