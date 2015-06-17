@@ -105,6 +105,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     private static Button qr_button;
     private static FrameLayout qr_livecam;
     private static ImageView qr_spoiler;
+    private static Context toastContext;
 
     private static ImageScanner scanner;
 
@@ -120,6 +121,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
         context = getApplicationContext();
+        setContext(context);
 
         // Set up the action bar.
         final ActionBar actionBar = getSupportActionBar();
@@ -376,13 +378,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         @Override
         public void onPause() {
             super.onPause();
-            System.out.println("Scan :: OnPause()");
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            System.out.println("Scan :: OnResume()");
         }
 
         public PlaceholderFragment() {
@@ -418,9 +418,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             FrameLayout preview = (FrameLayout) rootView.findViewById(R.id.imageView);
             preview.addView(mPreview);
 
-
-
-
             qr_button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if (barcodeScanned) {
@@ -444,6 +441,14 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+    static void setContext(Context zwerg){
+        toastContext = zwerg;
+    }
+
+    static Context getContext(){
+        return toastContext;
+    }
+
     static Camera.PreviewCallback previewCb = new Camera.PreviewCallback() {
         public void onPreviewFrame(byte[] data, Camera camera) {
             Camera.Parameters parameters = camera.getParameters();
@@ -458,12 +463,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 previewing = false;
                 //mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
-                qr_button.setText("QR-Code identifiziert. \n Klicken Sie für einen erneuten Scan!");
                 scanText.setTextColor(Color.parseColor("#FFFFFF"));
 
                 scan_type.setText("QR :");
                 scan_type.setTextColor(Color.parseColor("#FFFFFF"));
-                qr_button.setTextSize(15);
+                qr_button.setTextSize(20);
                 qr_button.setVisibility(View.VISIBLE);
 
 
@@ -476,6 +480,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                     barcodeScanned = true;
                 }
             }
+
         }
     };
 
@@ -513,11 +518,15 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                             RestClient.post(context, "users/saveHistory/", entity, new JsonHttpResponseHandler() {
                                 @Override
                                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    qr_button.setTextSize(15);
+                                    qr_button.setTextSize(20);
                                     if (response.toString().contains("OK")) {
-                                        qr_button.setText("Sie wurden erfolgreich an dieser Maschine" + newHistory.getGermanAction() + "\n Klicken Sie für einen erneuten Scan!");
+                                        //qr_button.setText("Sie wurden erfolgreich an dieser Maschine" + newHistory.getGermanAction() + "\n Klicken Sie für einen erneuten Scan!");
+                                        Toast.makeText(getContext(), "Sie wurden erfolgreich an dieser Maschine " + newHistory.getGermanAction() + "." ,
+                                                Toast.LENGTH_LONG).show();
                                     } else {
-                                        qr_button.setText("Bei der Authorisierung ist ein Fehler aufgetreten!\n Klicken Sie für einen erneuten Scan!");
+                                        //qr_button.setText("Bei der Authorisierung ist ein Fehler aufgetreten!\n Klicken Sie für einen erneuten Scan!");
+                                        Toast.makeText(getContext(),"Während der Authorisierung ist ein Fehler aufgetreten !",
+                                                Toast.LENGTH_LONG).show();
                                     }
                                 }
                             });
