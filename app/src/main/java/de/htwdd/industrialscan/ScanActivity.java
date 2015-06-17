@@ -588,7 +588,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      * The fragment argument representing the section number for this
      * fragment.
      */
-    private static final String ARG_SECTION_NUMBER = "section_number";
+        private static final String ARG_SECTION_NUMBER = "section_number";
 
         ListView lv;
 
@@ -636,30 +636,12 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                         long arg3) {
                     String listEntry = (String) arg0.getItemAtPosition(arg2);
                     String userId = listEntry.substring(0, listEntry.indexOf("hat"));
-                    if(!userId.isEmpty())
-                    {
-                            getPersonById(userId);
+                    if (!userId.isEmpty()) {
+                        getPersonById(userId);
                     }
                 }
             });
             return rootView;
-        }
-
-        public void getAllPersons()
-        {
-            RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline) {
-                    Gson gson = new Gson();
-                    Person[] persons = gson.fromJson(timeline.toString(), Person[].class);
-                    String value[] = new String[persons.length];
-                    for (int i = 0; i < persons.length; i++) {
-                        value[i] = persons[i].toString();
-                    }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1, value);
-                    lv.setAdapter(adapter);
-                }
-            });
         }
 
         public void getAllHistories()
@@ -710,7 +692,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        TextView name;
+        ListView lv;
 
         /**
          * Returns a new instance of this fragment for the history list screen
@@ -745,10 +727,41 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_user, container, false);
-            name = (TextView) rootView.findViewById(R.id.textViewNameContent);
+            lv=(ListView) rootView.findViewById(R.id.userListView);
 
+            getAllPersons();
 
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+                                        long arg3) {
+                    String listEntry = (String) arg0.getItemAtPosition(arg2);
+                    String userId = listEntry.substring(0, listEntry.indexOf("hat"));
+                    if(!userId.isEmpty())
+                    {
+                        Toast.makeText(context, "Nutzer" + userId, Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
             return rootView;
+        }
+
+        public void getAllPersons()
+        {
+            RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONArray timeline) {
+                    Gson gson = new Gson();
+                    Person[] persons = gson.fromJson(timeline.toString(), Person[].class);
+                    String value[] = new String[persons.length];
+                    for (int i = 0; i < persons.length; i++) {
+                        value[i] = persons[i].getFirstName()+" "+persons[i].getLastName();
+                    }
+                    ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),value);
+                    lv.setAdapter(adapter);
+                }
+            });
         }
     }
 }
