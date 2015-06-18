@@ -28,7 +28,6 @@ public class RestClient
     {
         client.addHeader("Content-Type","application/json");
         client.post(context,getAbsoluteUrl(url),entity,"application/json",responseHandler);
-        //client.post(getAbsoluteUrl(url), params, responseHandler);
     }
 
 

@@ -35,21 +35,17 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
-
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
 import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
-
 import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,23 +79,15 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         System.loadLibrary("iconv");
     }
 
+    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
-    /*
-        Steven
-     */
+    private Uri fileUri;
     private TextView scanned_rfid;
     private NfcAdapter mAdapter;
     protected PendingIntent mPendingIntent;
     private NdefMessage mNdefPushMessage;
     private AlertDialog mDialog;
-
-    // Camera
-
-    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-    private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
-
-    private Uri fileUri;
-
     private static Camera mCamera;
     private static CameraPreview mPreview;
     private static TextView scanText;
@@ -108,9 +96,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     private static FrameLayout qr_livecam;
     private static ImageView qr_spoiler;
     private static Context toastContext;
-
     private static ImageScanner scanner;
-
     private static boolean barcodeScanned = true;
     private static boolean previewing = true;
     private static Handler autoFocusHandler;
@@ -160,18 +146,10 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                             .setTabListener(this));
         }
 
-
-        /*
-        Steven
-         */
         mDialog = new AlertDialog.Builder(this).setNeutralButton("Ok", null).create();
         mAdapter = NfcAdapter.getDefaultAdapter(this);
-        //if (mAdapter == null) {
-            //showMessage(R.string.error, R.string.no_nfc);
-            //finish();
-            //return;
-        //}
-        // Eventhandler über NFC
+
+        // Eventhandler for NFC
         mPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
@@ -204,11 +182,10 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-            // Ladescreen
 
             scanned_rfid = (TextView) findViewById(R.id.scanned_rfid);
 
-            // Umwandeln
+            // Convert Hex ID
             Tag tag = (Tag) intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             String hex = getHex(tag.getId());
             System.out.println("Hex-ID: " + hex);
@@ -222,9 +199,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             processScannedId(hex);
             scan_type.setText("RFID :");
             scanned_rfid.setTextColor(getResources().getColor(R.color.color_white));
-
-            // Intent intent = new Intent(this, NextActivity.class);
-            // startActivity(intent);
         }
         return;
     }
@@ -355,7 +329,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * Fragment containing the QR and RFID Scan view.
      */
     public static class ScanFragment extends Fragment
     {
@@ -394,8 +368,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
-
-            //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
             System.out.println("onCreate::: Scan!!!!");
 
@@ -443,8 +415,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
-    static void setContext(Context zwerg){
-        toastContext = zwerg;
+    static void setContext(Context context){
+        toastContext = context;
     }
 
     static Context getContext(){
@@ -463,7 +435,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
             if (result != 0) {
                 previewing = false;
-                //mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
                 scanText.setTextColor(Color.parseColor("#FFFFFF"));
 
@@ -522,11 +493,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                                     qr_button.setTextSize(20);
                                     if (response.toString().contains("OK")) {
-                                        //qr_button.setText("Sie wurden erfolgreich an dieser Maschine" + newHistory.getGermanAction() + "\n Klicken Sie für einen erneuten Scan!");
                                         Toast.makeText(getContext(), "Sie wurden erfolgreich an dieser Maschine " + newHistory.getGermanAction() + "." ,
                                                 Toast.LENGTH_LONG).show();
                                     } else {
-                                        //qr_button.setText("Bei der Authorisierung ist ein Fehler aufgetreten!\n Klicken Sie für einen erneuten Scan!");
                                         Toast.makeText(getContext(),"Während der Authorisierung ist ein Fehler aufgetreten !",
                                                 Toast.LENGTH_LONG).show();
                                     }
@@ -591,7 +560,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * Fragment containing the history list view.
      */
     public static class HistoryFragment extends Fragment
     {
@@ -604,7 +573,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         ListView lv;
 
         /**
-         * Returns a new instance of this fragment for the history list screen
+         * Returns a new instance of this fragment for the section
          * number.
          */
         public static HistoryFragment newInstance(int sectionNumber)
@@ -694,7 +663,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * Fragment containing the user list view.
      */
     public static class UserFragment extends Fragment
     {
@@ -706,7 +675,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         ListView lv;
 
         /**
-         * Returns a new instance of this fragment for the history list screen
+         * Returns a new instance of this fragment for the section
          * number.
          */
         public static UserFragment newInstance(int sectionNumber)
