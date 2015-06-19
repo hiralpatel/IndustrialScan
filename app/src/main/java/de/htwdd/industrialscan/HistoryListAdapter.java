@@ -36,8 +36,6 @@ public class HistoryListAdapter extends ArrayAdapter<String>
         // Change icon based on name
         String s = values[position];
 
-        System.out.println(s);
-
         if (s.contains("angemeldet"))
         {
             imageView.setImageResource(R.drawable.unlocked);

@@ -38,8 +38,6 @@ public class UserListAdapter extends ArrayAdapter<String>
         // Change icon based on name
         String s = values.get(position);
 
-        System.out.println(s);
-
         if (s.contains("nicht"))
         {
             imageView.setImageResource(R.drawable.offline);

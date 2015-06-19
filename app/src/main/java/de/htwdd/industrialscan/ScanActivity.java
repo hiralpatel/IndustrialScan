@@ -159,7 +159,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     protected void onResume() {
-        System.out.println("main:onResume()");
         super.onResume();
         if (mAdapter != null) {
             if (!mAdapter.isEnabled()) {
@@ -171,7 +170,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     public void onNewIntent(Intent intent) {
-        System.out.println("main:onNewIntent()");
         setIntent(intent);
         resolveIntent(intent);
     }
@@ -188,14 +186,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             // Convert Hex ID
             Tag tag = (Tag) intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             String hex = getHex(tag.getId());
-            System.out.println("Hex-ID: " + hex);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < hex.length(); i += 2) {
                 sb.append(hex.substring(i, i + 2) + " ");
             }
-            System.out.println("SB:Hex-ID: " + sb.toString());
             scanned_rfid.setText(sb.toString());
-            System.out.println("Ausgabe1 : " + scanned_rfid.getText());
             processScannedId(hex);
             scan_type.setText("RFID :");
             scanned_rfid.setTextColor(getResources().getColor(R.color.color_white));
@@ -369,7 +364,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_scan, container, false);
 
-            System.out.println("onCreate::: Scan!!!!");
 
             qr_button = (Button)rootView.findViewById(R.id.button_capture);
             qr_spoiler = (ImageView) rootView.findViewById(R.id.imageView2);
@@ -404,6 +398,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                         scanText.setTextColor(Color.parseColor("#FFFFFF"));
                         scan_type.setTextColor(Color.parseColor("#FFFFFF"));
 
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         mCamera.setPreviewCallback(previewCb);
                         mCamera.startPreview();
                         previewing = true;
@@ -448,7 +447,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 for (Symbol sym : syms) {
 
                     scanText.setText(sym.getData());
-                    System.out.println("Ausgabe2 : " + scanText.getText());
                     processScannedId(sym.getData());
                     barcodeScanned = true;
                 }
@@ -482,6 +480,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                             } else {
                                 newHistory.setAction("logout");
                             }
+
                             StringEntity entity = null;
                             try {
                                 entity = new StringEntity(gson.toJson(newHistory));
@@ -588,13 +587,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         @Override
         public void onPause() {
             super.onPause();
-            System.out.println("HistoryFragment :: OnPause()");
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            System.out.println("HistoryFragment :: OnResume()");
         }
 
         public HistoryFragment()
@@ -690,13 +687,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         @Override
         public void onPause() {
             super.onPause();
-            System.out.println("User :: OnPause()");
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            System.out.println("User :: OnResume()");
         }
 
         public UserFragment()
@@ -716,12 +711,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                                         long arg3) {
-                    String listEntry = (String) arg0.getItemAtPosition(arg2);
-                    String userId = listEntry.substring(0, listEntry.indexOf("hat"));
-                    if(!userId.isEmpty())
-                    {
-                        Toast.makeText(getActivity().getApplicationContext(), "Nutzer" + userId, Toast.LENGTH_LONG).show();
-                    }
                 }
             });
             return rootView;
