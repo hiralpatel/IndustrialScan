@@ -35,17 +35,21 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
+
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
 import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
+
 import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +109,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
         context = getApplicationContext();
@@ -152,9 +155,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         // Eventhandler for NFC
         mPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
-        
-        
     }
 
     @Override
@@ -397,12 +397,6 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                         scan_type.setText("QR / RFID :");
                         scanText.setTextColor(Color.parseColor("#FFFFFF"));
                         scan_type.setTextColor(Color.parseColor("#FFFFFF"));
-
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                         mCamera.setPreviewCallback(previewCb);
                         mCamera.startPreview();
                         previewing = true;
