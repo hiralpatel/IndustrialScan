@@ -9,9 +9,12 @@ import com.loopj.android.http.RequestParams;
 import org.apache.http.entity.StringEntity;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * Class for calling the REST Backend
@@ -26,23 +29,33 @@ public class RestClient
     public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler)
     {
         readURLfromFile();
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" + BASE_URL);
         client.get(getAbsoluteUrl(url), params, responseHandler);
     }
 
     public static void post(Context context, String url, StringEntity entity, AsyncHttpResponseHandler responseHandler)
     {
-        readURLfromFile();
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" + BASE_URL);
-        client.addHeader("Content-Type","application/json");
-        client.post(context,getAbsoluteUrl(url),entity,"application/json",responseHandler);
+            readURLfromFile();
+            client.addHeader("Content-Type", "application/json");
+            client.post(context, getAbsoluteUrl(url), entity, "application/json", responseHandler);
     }
 
+    /*
+     * setup the REST-URL
+     * - setting url in App is not on purpose
+     */
     private static void readURLfromFile() {
-        File storageDir = new File("/mnt/extSdCard/Android/data/de.htwdd.industrialscan/files/IndustrialURL.cfg");
-        if (storageDir.isFile()) {
+        String filename = "IndustrialURL.cfg";
+        String internal_sd = "sdcard";
+        //Falls Alternative Hardwarebezeichnung bei unterschiedl. Endsystemen
+        if(new File("sdcard0").listFiles() != null)
+            internal_sd = "sdcard0";
+
+        File files = new File("/mnt/" + internal_sd +"/Android/data/de.htwdd.industrialscan/files/" + filename);
+
+        if (files.isFile()) {
             try {
-                BufferedReader inputReader = new BufferedReader(new InputStreamReader(new FileInputStream(storageDir)));
+
+                BufferedReader inputReader = new BufferedReader(new InputStreamReader(new FileInputStream(files)));
                 String inputString2;
                 StringBuffer stringBuffer = new StringBuffer();
                 while ((inputString2 = inputReader.readLine()) != null) {
@@ -50,6 +63,15 @@ public class RestClient
                 }
                 BASE_URL = stringBuffer.toString();
             } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else{
+            try{
+                new File("/mnt/" + internal_sd +"/Android/data/de.htwdd.industrialscan/files/").mkdirs();
+                BufferedWriter ouputWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(files)));
+                ouputWriter.append(BASE_URL);
+                ouputWriter.flush();
+            } catch(Exception e){
                 e.printStackTrace();
             }
         }

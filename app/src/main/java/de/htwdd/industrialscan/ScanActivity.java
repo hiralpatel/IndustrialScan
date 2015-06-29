@@ -157,6 +157,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -188,7 +190,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             String hex = getHex(tag.getId());
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < hex.length(); i += 2) {
-                sb.append(hex.substring(i, i + 2) + " ");
+                sb.append(hex.substring(i, i + 2));
             }
             scanned_rfid.setText(sb.toString());
             processScannedId(hex);
@@ -435,6 +437,8 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 scan_type.setTextColor(Color.parseColor("#FFFFFF"));
                 qr_button.setTextSize(20);
                 qr_button.setVisibility(View.VISIBLE);
+                qr_spoiler.setVisibility(View.VISIBLE);
+                qr_livecam.setVisibility(View.INVISIBLE);
 
 
                 SymbolSet syms = scanner.getResults();
@@ -458,7 +462,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 Gson gson = new Gson();
                 Person[] persons = gson.fromJson(response.toString(), Person[].class);
                 if (persons.length != 1) {
-                    qr_button.setText("Nutzer mit dieser ID ist nicht vorhanden! \n Klicken Sie für einen erneuten Scan!");
+                    qr_button.setText("Klicken Sie für einen erneuten Scan!");
                 } else //User found! Now fetch the last action of this user
                 {
                     RestClient.get("users/getPersonsCurrentActionByIdJSON/" + id, null, new JsonHttpResponseHandler() {
@@ -489,8 +493,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                                         Toast.makeText(getContext(), "Sie wurden erfolgreich an dieser Maschine " + newHistory.getGermanAction() + "." ,
                                                 Toast.LENGTH_LONG).show();
                                     } else {
-                                        Toast.makeText(getContext(),"Während der Authorisierung ist ein Fehler aufgetreten !",
-                                                Toast.LENGTH_LONG).show();
+                                        Exception e = new Exception("Während der Authorisierung ist ein Fehler aufgetreten !");
+                                        //Toast.makeText(getContext(),"Während der Authorisierung ist ein Fehler aufgetreten !",
+                                        //        Toast.LENGTH_LONG).show();
                                     }
                                 }
                             });

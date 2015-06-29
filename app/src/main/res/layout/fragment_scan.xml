@@ -23,8 +23,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:hint="QR / RFID :"
         android:layout_below="@+id/section_label"
-        android:textColor="#ffffd243"
-        android:textColorHint="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"
+        android:background="@drawable/round_corners"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -37,7 +38,8 @@
         android:layout_alignRight="@+id/imageView"
         android:layout_alignEnd="@+id/imageView"
         android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
+        android:textColorHint="#FFFFFF"
+        android:background="@drawable/round_corners"/>
 
     <FrameLayout
         android:id="@+id/imageView"
