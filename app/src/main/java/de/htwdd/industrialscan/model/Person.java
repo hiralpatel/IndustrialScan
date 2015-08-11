@@ -1,8 +1,9 @@
 package de.htwdd.industrialscan.model;
 
 /**
- * Created by Simon on 27.05.15.
+ * A basic person model.
  */
+
 public class Person
 {
     String id;

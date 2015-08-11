@@ -4,10 +4,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 /**
- * Created by Simon on 30.05.15.
+ * A basic history model.
  */
 public class History
 {

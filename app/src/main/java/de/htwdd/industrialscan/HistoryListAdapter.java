@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * Created by Simon on 30.05.15.
+ * The Object is used to fill the History list fragment.
  */
 public class HistoryListAdapter extends ArrayAdapter<String>
 {

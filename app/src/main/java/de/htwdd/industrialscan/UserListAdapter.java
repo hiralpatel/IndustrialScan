@@ -10,9 +10,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by Simon on 30.05.15.
- */
 public class UserListAdapter extends ArrayAdapter<String>
 {
     private final Context context;

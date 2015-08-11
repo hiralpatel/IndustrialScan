@@ -1,9 +1,5 @@
 package de.htwdd.industrialscan.model;
 
-/**
- * Created by AsUSee on 02.06.2015.
- */
-
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -13,7 +9,9 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-/** A basic Camera preview class */
+/**
+ * A basic Camera preview class. Manages the handling of the camera.
+ */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
@@ -32,6 +30,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
          * Set camera to continuous focus if supported, otherwise use
          * software auto-focus. Only works for API level >=9.
          */
+
         /*
         Camera.Parameters parameters = camera.getParameters();
         for (String f : parameters.getSupportedFocusModes()) {
@@ -52,8 +51,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
+    /**
+     * The Surface has been created, now tell the camera where to draw the preview.
+     * @param holder
+     */
     public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, now tell the camera where to draw the preview.
+
         try {
             mCamera.setPreviewDisplay(holder);
         } catch (Exception e) {
@@ -61,15 +64,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    /**
+     * Camera preview released in activity
+     * @param holder
+     */
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Camera preview released in activity
     }
 
+    /**
+     * If your preview can change or rotate, take care of those events here.
+     * Make sure to stop the preview before resizing or reformatting it.
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        /*
-         * If your preview can change or rotate, take care of those events here.
-         * Make sure to stop the preview before resizing or reformatting it.
-         */
+
         if (mHolder.getSurface() == null){
             // preview surface does not exist
             return;

@@ -1,10 +1,5 @@
 package de.htwdd.industrialscan;
 
-/**
- * Created by Steven on 02.06.2015.
- */
-
-
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
@@ -48,13 +43,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    /**
+     * Camera preview released in activity
+     * @param holder
+     */
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Camera preview released in activity
+
     }
 
+    /**
+     * Configs your grafic Camera behaviour.
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        /*
-         * If your preview can change or rotate, take care of those events here.
+        /* If your preview can change or rotate, take care of those events here.
          * Make sure to stop the preview before resizing or reformatting it.
          */
         if (mHolder.getSurface() == null){

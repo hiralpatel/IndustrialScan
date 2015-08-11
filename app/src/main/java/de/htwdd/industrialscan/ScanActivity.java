@@ -59,26 +59,22 @@ import de.htwdd.industrialscan.model.CameraPreview;
 import de.htwdd.industrialscan.model.History;
 import de.htwdd.industrialscan.model.Person;
 
-
+/**
+ * This is the main-activity. It implements every bar of the app, the scan analysis logic and also
+ * the animation logic.
+ */
 public class ScanActivity extends ActionBarActivity implements ActionBar.TabListener
 {
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
+
     static Person currentlySelectedPerson;
     SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
+    // This will host the section contents.
     static ViewPager mViewPager;
 
-    //loading ZBAr lib for Galaxy Ace
+    /**
+     * Try to load the ZBAr lib for Galaxy Ace.
+     */
     static {
         System.loadLibrary("iconv");
     }
@@ -118,8 +114,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
+        /**
+         * Create the adapter that will return a fragment for each of the three
+         * primary sections of the activity.
+         */
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -157,7 +156,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
     }
 
-
+    /**
+     * Used to recall the app while stopped. Needed to recapture the camera-stream.
+     */
 
     @Override
     protected void onResume() {
@@ -170,12 +171,20 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+    /**
+     * The method is used to get the event of an RFID event
+     * @param intent RFID intent
+     */
     @Override
     public void onNewIntent(Intent intent) {
         setIntent(intent);
         resolveIntent(intent);
     }
 
+    /**
+     * The method reverse the rfid hex code and call's back-/front-end.
+     * @param intent
+     */
     public void resolveIntent(Intent intent){
 
         String action = intent.getAction();
@@ -200,7 +209,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         return;
     }
 
-
+    /**
+     * The method is used to decode the NFC-Tag to RFID.
+     * @param bytes describes the byte-stream of the NFC-Tag
+     * @return the RFID-Code
+     */
     private String getHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
@@ -218,7 +231,11 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         return reverse;
     }
 
-    // Anzeigen der NFC-Einstellungen
+
+    /**
+     * The method will show NFC - Settings on app-start, if the service is offline.
+     */
+
     private void showWirelessSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.nfc_disabled);
@@ -234,23 +251,37 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             }
         });
         builder.create().show();
-        return;
     }
 
+    /**
+     * The method inflates the menu. This will add items to the action bar, if it is in the
+     * present case.
+     *
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_scan, menu);
         return true;
     }
 
+    /**
+     * Handle action bar item clicks here. The action bar will
+     * automatically handle clicks on the Home/Up button, so long
+     * as you specify a parent activity in AndroidManifest.xml.
+     *
+     * @param item
+     * @return
+     */
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        //
+        //
+        //
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -262,26 +293,39 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * When the given tab is selected, switch to the corresponding page in the ViewPager.
+     * @param tab
+     * @param fragmentTransaction
+     */
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction)
     {
-        // When the given tab is selected, switch to the corresponding page in
-        // the ViewPager.
         mViewPager.setCurrentItem(tab.getPosition());
     }
 
+    /**
+     * not used
+     * @param tab
+     * @param fragmentTransaction
+     */
     @Override
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction)
     {
     }
 
+    /**
+     * not used
+     * @param tab
+     * @param fragmentTransaction
+     */
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction)
     {
     }
 
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * The FragmentPagerAdapter that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter
@@ -302,10 +346,13 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             else return new Fragment();
         }
 
+        /**
+         * Show 3 total pages for scroll view.
+         * @return
+         */
         @Override
         public int getCount()
         {
-            // Show 3 total pages for scroll view.
             return 3;
         }
 
@@ -361,6 +408,14 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         public ScanFragment() {
         }
 
+        /**
+         * The method initialize the camera (QR Code-Scanner Logic). With the scan-button
+         * the scan process starts.
+         * @param inflater
+         * @param container
+         * @param savedInstanceState
+         * @return
+         */
         @Override
         public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -373,20 +428,19 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             scanText = (TextView) rootView.findViewById(R.id.scanned_rfid);
             scan_type = (TextView) rootView.findViewById(R.id.show_rfid);
 
-
+            // Used to force proper camera-focus by repeating.
             autoFocusHandler = new Handler();
             mCamera = getCameraInstance();
 
-            /* Instance barcode scanner */
-
+            // Instance barcode scanner
             scanner = new ImageScanner();
             scanner.setConfig(0, Config.ENABLE, 0);
             scanner.setConfig(Symbol.QRCODE, Config.ENABLE, 1);
 
-
             mPreview = new CameraPreview(inflater.getContext(), mCamera, previewCb, autoFocusCB);
             FrameLayout preview = (FrameLayout) rootView.findViewById(R.id.imageView);
             preview.addView(mPreview);
+
 
             qr_button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -410,14 +464,26 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+    /**
+     * The method is used to set the actual context.
+     * @param context
+     */
     static void setContext(Context context){
         toastContext = context;
     }
 
+    /**
+     * The method is used to get the actual context.
+     * @return
+     */
     static Context getContext(){
         return toastContext;
     }
 
+    /**
+     * The method is used to identify a proper QR-Code. If the process find a QR-Code, it will
+     * decode the result via zbar-libary-functions. It will also call the front-/backend.
+     */
     static Camera.PreviewCallback previewCb = new Camera.PreviewCallback() {
         public void onPreviewFrame(byte[] data, Camera camera) {
             Camera.Parameters parameters = camera.getParameters();
@@ -453,10 +519,16 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     };
 
+    /**
+     * The methods updates the backend. It transforms the QR-Code into a json and send it
+     * via REST to backend.
+     * @param id
+     */
     static public void processScannedId(final String id)
     {
         //check for if user exists
         RestClient.get("users/getPersonByIdJSON/" + id, null, new JsonHttpResponseHandler() {
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 Gson gson = new Gson();
@@ -506,13 +578,18 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         });
     }
 
-    // Mimic continuous auto-focusing
+    /**
+     * Mimic continuous auto-focusing
+     */
     static Camera.AutoFocusCallback  autoFocusCB = new Camera.AutoFocusCallback() {
         public void onAutoFocus(boolean success, Camera camera) {
             autoFocusHandler.postDelayed(doAutoFocus, 1000);
         }
     };
 
+    /**
+     * The method is used to release the camera-stream for other app while in pause.
+     */
     private void releaseCamera() {
         if (mCamera != null) {
             previewing = false;
@@ -522,6 +599,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+    /**
+     * The method is used to do autoFocus on Camera.
+     */
     private static Runnable doAutoFocus = new Runnable() {
         public void run() {
             if (previewing)
@@ -534,7 +614,10 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         //releaseCamera();
     }
 
-    /** A safe way to get an instance of the Camera object. */
+    /**
+     * A safe way to get an instance of the Camera object.
+     * @return null if camera is unavailable, otherwise an camera object
+     */
     public static Camera getCameraInstance(){
         Camera c = null;
         try {
@@ -543,10 +626,14 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         catch (Exception e){
             // Camera is not available (in use or does not exist)
         }
-        return c; // returns null if camera is unavailable
+        return c;
     }
 
-    /** Check if this device has a camera */
+    /**
+     * The device will be checked for a camera.
+     * @param context actual contect of the app
+     * @return true/false
+     */
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
             // this device has a camera
@@ -562,7 +649,7 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
      */
     public static class HistoryFragment extends Fragment
     {
-        /**
+    /**
      * The fragment argument representing the section number for this
      * fragment.
      */
@@ -597,6 +684,13 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         {
         }
 
+        /**
+         * Resolves the person information by ID.
+         * @param inflater
+         * @param container
+         * @param savedInstanceState
+         * @return
+         */
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -620,6 +714,9 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             return rootView;
         }
 
+        /**
+         * The method updates the User-History.
+         */
         public void getAllHistories()
         {
             RestClient.get("users/getAllHistories/", null, new JsonHttpResponseHandler() {
@@ -658,21 +755,21 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
+
+
     /**
      * Fragment containing the user list view.
      */
     public static class UserFragment extends Fragment
     {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
+        // The fragment argument representing the section number for this fragment.
         private static final String ARG_SECTION_NUMBER = "section_number";
         ListView lv;
 
         /**
-         * Returns a new instance of this fragment for the section
-         * number.
+         * Returns a new instance of this fragment for the section number.
+         * @param sectionNumber of the fragment
+         * @return
          */
         public static UserFragment newInstance(int sectionNumber)
         {
@@ -693,47 +790,38 @@ public class ScanActivity extends ActionBarActivity implements ActionBar.TabList
             super.onResume();
         }
 
-        public UserFragment()
-        {
-        }
+        public UserFragment(){}
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_user, container, false);
-            lv=(ListView) rootView.findViewById(R.id.userListView);
-
+            lv = (ListView) rootView.findViewById(R.id.userListView);
             getAllPersons();
-
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 @Override
-                public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                                        long arg3) {
+                public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 }
             });
             return rootView;
         }
 
-        public void getAllPersons()
-        {
+        public void getAllPersons(){
             RestClient.get("users/getAllPersons/", null, new JsonHttpResponseHandler()
             {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONArray response)
                 {
-                    Gson gson = new Gson();
-                    final Person[] persons = gson.fromJson(response.toString(), Person[].class);
-                    final List<String> values = new ArrayList<String>();
-                    for (final Person p : persons)
-                    {
-                                values.add(p.getFirstName()+" "+p.getLastName()+" ist "+p.getGermanStatus());
-                    }
-                    while(persons.length != values.size())
-                    {
-                    }
-                    ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),values);
-                    lv.setAdapter(adapter);
+                Gson gson = new Gson();
+                final Person[] persons = gson.fromJson(response.toString(), Person[].class);
+                final List<String> values = new ArrayList<String>();
+                for (final Person p : persons){
+                    values.add(p.getFirstName()+" "+p.getLastName()+" ist "+p.getGermanStatus());
+                }
+                while(persons.length != values.size()){}
+                ArrayAdapter<String> adapter=new UserListAdapter(getActivity(),values);
+                lv.setAdapter(adapter);
                 }
             });
         }

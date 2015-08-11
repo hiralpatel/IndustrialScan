@@ -17,11 +17,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 /**
- * Class for calling the REST Backend
- * Created by Simon on 27.05.15.
+ * Class for calling the REST Backend and configuration of the config file.
  */
 public class RestClient
 {
+    /**
+     * This is our personal URL for REST-client-calls.
+     */
     private static String BASE_URL = "http://http-server.qzcz876cdyam6dnu.myfritz.net:8080/RestWSProject/Rest/";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
@@ -39,14 +41,14 @@ public class RestClient
             client.post(context, getAbsoluteUrl(url), entity, "application/json", responseHandler);
     }
 
-    /*
-     * setup the REST-URL
-     * - setting url in App is not on purpose
+    /**
+     * This call is used to change the REST-URL in the FIle-System of the mobile-phone.
+     * TO setup an URL inside the app is not on purpose.
      */
     private static void readURLfromFile() {
         String filename = "IndustrialURL.cfg";
         String internal_sd = "sdcard";
-        //Falls Alternative Hardwarebezeichnung bei unterschiedl. Endsystemen
+        //Used for different device descriptions on different system-versions
         if(new File("sdcard0").listFiles() != null)
             internal_sd = "sdcard0";
 
@@ -54,7 +56,6 @@ public class RestClient
 
         if (files.isFile()) {
             try {
-
                 BufferedReader inputReader = new BufferedReader(new InputStreamReader(new FileInputStream(files)));
                 String inputString2;
                 StringBuffer stringBuffer = new StringBuffer();
@@ -67,6 +68,7 @@ public class RestClient
             }
         }else{
             try{
+                // Path of the config-file
                 new File("/mnt/" + internal_sd +"/Android/data/de.htwdd.industrialscan/files/").mkdirs();
                 BufferedWriter ouputWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(files)));
                 ouputWriter.append(BASE_URL);
